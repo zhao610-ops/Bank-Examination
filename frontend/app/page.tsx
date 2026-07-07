@@ -54,25 +54,25 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Card className="relative overflow-hidden border-brand-100 bg-slate-950 text-white shadow-none">
+          <Card className="relative overflow-hidden border-slate-800 !bg-slate-950 !text-white shadow-none">
             <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-brand-600/20 blur-3xl" />
             <CardContent className="relative p-6 sm:p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-brand-100">今日训练建议</p>
-                  <h2 className="mt-2 text-xl font-semibold">完成一组资料分析专项</h2>
+                  <p className="text-xs font-medium uppercase tracking-[0.2em] text-blue-200">今日训练建议</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">完成一组资料分析专项</h2>
                 </div>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-brand-100">约 15 分钟</span>
+                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-blue-100">约 15 分钟</span>
               </div>
               <div className="mt-8 space-y-4">
                 {["选择目标银行与岗位", "AI 生成针对性题目", "即时批改并定位薄弱点"].map((item, index) => (
                   <div key={item} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-sm font-semibold">{index + 1}</span>
-                    <span className="text-sm text-slate-200">{item}</span>
+                    <span className="text-sm font-medium text-slate-100">{item}</span>
                   </div>
                 ))}
               </div>
-              <Link href="/training" className="mt-6 inline-flex text-sm font-medium text-brand-100 hover:text-white">配置训练方案 →</Link>
+              <Link href="/training" className="mt-6 inline-flex text-sm font-semibold text-blue-200 transition-colors hover:text-white">配置训练方案 →</Link>
             </CardContent>
           </Card>
         </PageShell>
@@ -144,4 +144,3 @@ export default function HomePage() {
     </>
   );
 }
-
