@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PageShell } from "@/components/layout/PageShell";
+import { ExamCountdownCard } from "@/components/plan/ExamCountdownCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
 
@@ -80,6 +81,7 @@ export default function HomePage() {
 
       <PageShell>
         <section aria-labelledby="overview-title">
+          <ExamCountdownCard />
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-brand-700">训练概览</p>

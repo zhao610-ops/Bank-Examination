@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Question, UserAnswer, UserStat
+from app.models import DailyTask, ExamPlan, Question, UserAnswer, UserStat
 from app.schemas import AnswerSubmitRequest, AnswerSubmitResponse
 
 
@@ -48,6 +48,21 @@ def submit_answer(payload: AnswerSubmitRequest, db: Session = Depends(get_db)) -
     stat.correct_count += int(is_correct)
     stat.accuracy = round(stat.correct_count / stat.total_count * 100, 2)
     stat.updated_at = datetime.now()
+
+    plan = db.scalar(select(ExamPlan).order_by(ExamPlan.id.desc()))
+    if plan is not None:
+        task = db.scalar(
+            select(DailyTask).where(
+                DailyTask.plan_id == plan.id,
+                DailyTask.task_date == date.today(),
+                DailyTask.category == question.category,
+                DailyTask.sub_category == question.sub_category,
+            )
+        )
+        if task is not None and task.completed_count < task.target_count:
+            task.completed_count += 1
+            task.status = "completed" if task.completed_count >= task.target_count else "in_progress"
+            task.updated_at = datetime.now()
     db.commit()
 
     suggestion = (

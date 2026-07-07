@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -67,3 +67,45 @@ class UserStat(Base):
     accuracy: Mapped[float] = mapped_column(Float, default=0)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
 
+
+class ExamPlan(Base):
+    __tablename__ = "exam_plans"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    exam_type: Mapped[str] = mapped_column(String(50))
+    bank_type: Mapped[str] = mapped_column(String(50))
+    target_bank: Mapped[str] = mapped_column(String(100))
+    job_type: Mapped[str] = mapped_column(String(50))
+    exam_date: Mapped[date] = mapped_column(Date)
+    remaining_days: Mapped[int] = mapped_column(Integer)
+    current_stage: Mapped[str] = mapped_column(String(50))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class DailyTask(Base):
+    __tablename__ = "daily_tasks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    plan_id: Mapped[int] = mapped_column(ForeignKey("exam_plans.id"), index=True)
+    task_date: Mapped[date] = mapped_column(Date, index=True)
+    category: Mapped[str] = mapped_column(String(50), index=True)
+    sub_category: Mapped[str] = mapped_column(String(50), index=True)
+    target_count: Mapped[int] = mapped_column(Integer)
+    completed_count: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    reason: Mapped[str] = mapped_column(String(200), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class PlanProgress(Base):
+    __tablename__ = "plan_progress"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    plan_id: Mapped[int] = mapped_column(ForeignKey("exam_plans.id"), index=True)
+    date: Mapped[date] = mapped_column(Date, index=True)
+    total_tasks: Mapped[int] = mapped_column(Integer, default=0)
+    completed_tasks: Mapped[int] = mapped_column(Integer, default=0)
+    completion_rate: Mapped[float] = mapped_column(Float, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

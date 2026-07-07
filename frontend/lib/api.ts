@@ -3,9 +3,13 @@ import type {
   AnswerResult,
   BankGroup,
   Category,
+  CreateExamPlanPayload,
+  ExamPlan,
   GenerateQuestionPayload,
+  PlanProgress,
   Question,
   Stats,
+  TodayPlan,
   WrongQuestion
 } from "@/types";
 
@@ -53,5 +57,20 @@ export const api = {
     }),
   getWrongQuestions: (category?: string) =>
     request<WrongQuestion[]>(`/api/wrong-questions${category ? `?category=${encodeURIComponent(category)}` : ""}`),
-  getStats: () => request<Stats>("/api/stats")
+  getStats: () => request<Stats>("/api/stats"),
+  createExamPlan: (payload: CreateExamPlanPayload) =>
+    request<ExamPlan>("/api/exam-plan/create", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  getCurrentExamPlan: async (): Promise<ExamPlan | null> => {
+    try {
+      return await request<ExamPlan>("/api/exam-plan/current");
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null;
+      throw error;
+    }
+  },
+  getTodayPlan: () => request<TodayPlan>("/api/exam-plan/today"),
+  getPlanProgress: () => request<PlanProgress>("/api/exam-plan/progress")
 };

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.database import Base, SessionLocal, engine
-from app.routers import answers, metadata, questions, stats, wrong_questions
+from app.routers import answers, exam_plan, metadata, questions, stats, wrong_questions
 from app.seed_data import seed_database
 
 
@@ -33,9 +33,9 @@ app.include_router(questions.router)
 app.include_router(answers.router)
 app.include_router(wrong_questions.router)
 app.include_router(stats.router)
+app.include_router(exam_plan.router)
 
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
-

@@ -81,3 +81,46 @@ export interface Category {
   children: string[];
 }
 
+export interface ExamPlan {
+  id: number;
+  exam_type: string;
+  bank_type: string;
+  target_bank: string;
+  job_type: string;
+  exam_date: string;
+  remaining_days: number;
+  current_stage: string;
+}
+
+export interface DailyTask {
+  id: number;
+  category: string;
+  sub_category: string;
+  target_count: number;
+  completed_count: number;
+  status: string;
+  reason: string;
+}
+
+export interface TodayPlan {
+  date: string;
+  remaining_days: number;
+  current_stage: string;
+  tasks: DailyTask[];
+}
+
+export interface PlanProgress {
+  today_completion_rate: number;
+  week_completion_rate: number;
+  total_completion_rate: number;
+  streak_days: number;
+  behind_tasks: number;
+}
+
+export interface CreateExamPlanPayload {
+  exam_type: string;
+  bank_type: string;
+  target_bank: string;
+  job_type: string;
+  exam_date: string;
+}

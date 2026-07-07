@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -106,3 +106,50 @@ class CategoryResponse(BaseModel):
     name: str
     children: list[str]
 
+
+class ExamPlanCreateRequest(BaseModel):
+    exam_type: str = Field(min_length=1, max_length=50)
+    bank_type: str = Field(min_length=1, max_length=50)
+    target_bank: str = Field(min_length=1, max_length=100)
+    job_type: str = Field(min_length=1, max_length=50)
+    exam_date: date
+
+
+class ExamPlanResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    exam_type: str
+    bank_type: str
+    target_bank: str
+    job_type: str
+    exam_date: date
+    remaining_days: int
+    current_stage: str
+
+
+class DailyTaskResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    category: str
+    sub_category: str
+    target_count: int
+    completed_count: int
+    status: str
+    reason: str
+
+
+class TodayPlanResponse(BaseModel):
+    date: date
+    remaining_days: int
+    current_stage: str
+    tasks: list[DailyTaskResponse]
+
+
+class PlanProgressResponse(BaseModel):
+    today_completion_rate: float
+    week_completion_rate: float
+    total_completion_rate: float
+    streak_days: int
+    behind_tasks: int
