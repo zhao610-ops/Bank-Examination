@@ -15,10 +15,11 @@ router = APIRouter(prefix="/api/questions", tags=["题目"])
 @router.post("/generate", response_model=QuestionResponse, status_code=status.HTTP_201_CREATED)
 async def generate_question(payload: QuestionGenerateRequest, db: Session = Depends(get_db)) -> QuestionResponse:
     try:
-        generated, source_type = await LLMService().generate_question(payload)
+        result = await LLMService().generate_question(payload)
     except LLMGenerationError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
+    generated = result.question
     question = Question(
         bank_type=generated.bank_type,
         target_bank=generated.target_bank,
@@ -32,10 +33,15 @@ async def generate_question(payload: QuestionGenerateRequest, db: Session = Depe
         explanation=generated.explanation,
         knowledge_point=generated.knowledge_point,
         mistake_tips=generated.mistake_tips,
-        source_type=source_type,
+        source_type=result.source_type,
     )
     db.add(question)
     db.commit()
     db.refresh(question)
-    return QuestionResponse(id=question.id, **generated.model_dump())
-
+    return QuestionResponse(
+        id=question.id,
+        source_type=result.source_type,
+        llm_provider=result.llm_provider,
+        llm_model=result.llm_model,
+        **generated.model_dump(),
+    )

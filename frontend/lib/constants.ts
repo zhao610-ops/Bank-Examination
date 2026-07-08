@@ -5,6 +5,7 @@ import type { BankGroup, Category } from "@/types";
 export const EXAM_TYPES = ["秋招", "春招", "实习招聘", "社招"];
 export const JOB_TYPES = ["综合岗", "柜员岗", "客户经理岗", "金融科技岗", "风控岗", "管培生"];
 export const QUESTION_COUNTS = [5, 10, 20];
+export const DAILY_MINUTES_OPTIONS = [15, 30, 60, 90];
 export const DIFFICULTIES: { value: Difficulty; label: string }[] = [
   { value: "easy", label: "基础" },
   { value: "medium", label: "中等" },
@@ -12,6 +13,8 @@ export const DIFFICULTIES: { value: Difficulty; label: string }[] = [
 ];
 
 export const TRAINING_STORAGE_KEY = "bank-exam-training-config";
+export const SMART_TRAINING_STORAGE_KEY = "bank-exam-smart-training-plan";
+export const WRONG_REVIEW_STORAGE_KEY = "bank-exam-wrong-review";
 
 export const FALLBACK_BANKS: BankGroup[] = [
   { bank_type: "国有六大行", banks: ["工商银行", "农业银行", "中国银行", "建设银行", "交通银行", "邮储银行"].map((bank_name, index) => ({ id: index + 1, bank_type: "国有六大行", bank_name, region: "全国", features: "" })) },
@@ -31,4 +34,3 @@ export const FALLBACK_CATEGORIES: Category[] = [
   { name: "写作 / 申论", children: ["金融热点短文", "材料分析", "银行业务建议", "半结构化表达题"] },
   { name: "性格测试", children: ["职业稳定性", "服务意识", "团队合作", "抗压能力", "合规意识"] }
 ];
-

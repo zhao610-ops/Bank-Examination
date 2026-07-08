@@ -14,6 +14,41 @@ export interface TrainingConfig {
 
 export type GenerateQuestionPayload = Omit<TrainingConfig, "exam_type" | "question_count">;
 
+export interface TrainingRecommendRequest {
+  exam_type: string;
+  bank_type: string;
+  target_bank: string;
+  job_type: string;
+  exam_date: string;
+  daily_minutes: number;
+}
+
+export interface TrainingTaskRecommendation {
+  category: string;
+  sub_category: string;
+  difficulty: Difficulty;
+  question_count: number;
+  reason: string;
+}
+
+export interface TrainingRecommendation {
+  remaining_days: number;
+  current_stage: string;
+  difficulty: Difficulty;
+  total_question_count: number;
+  estimated_minutes: number;
+  tasks: TrainingTaskRecommendation[];
+  suggestions: string[];
+}
+
+export interface SmartTrainingPlan {
+  exam_type: string;
+  bank_type: string;
+  target_bank: string;
+  job_type: string;
+  tasks: TrainingTaskRecommendation[];
+}
+
 export interface Question extends GenerateQuestionPayload {
   id: number;
   question: string;
@@ -22,6 +57,9 @@ export interface Question extends GenerateQuestionPayload {
   explanation: string;
   knowledge_point: string;
   mistake_tips: string;
+  source_type?: string;
+  llm_provider?: string;
+  llm_model?: string;
 }
 
 export interface AnswerResult {
@@ -35,15 +73,26 @@ export interface AnswerResult {
 export interface WrongQuestion {
   id: number;
   question_id: number;
+  bank_type: string;
+  target_bank: string;
+  job_type: string;
   category: string;
   sub_category: string;
+  difficulty: Difficulty;
   question: string;
   options: Record<AnswerOption, string>;
   user_answer: AnswerOption;
   correct_answer: AnswerOption;
   explanation: string;
+  knowledge_point: string;
+  mistake_tips: string;
   mistake_reason: string;
   created_at: string;
+}
+
+export interface WrongReviewSession {
+  mode: "wrong_review";
+  questions: Question[];
 }
 
 export interface ModuleStat {

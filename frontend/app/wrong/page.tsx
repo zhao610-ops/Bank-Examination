@@ -1,21 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { PageShell } from "@/components/layout/PageShell";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Select } from "@/components/ui/Select";
 import { api } from "@/lib/api";
-import { FALLBACK_CATEGORIES } from "@/lib/constants";
-import type { WrongQuestion } from "@/types";
+import { FALLBACK_CATEGORIES, WRONG_REVIEW_STORAGE_KEY } from "@/lib/constants";
+import type { Question, WrongQuestion } from "@/types";
 
 
 export default function WrongQuestionsPage() {
+  const router = useRouter();
   const [category, setCategory] = useState("");
   const [questions, setQuestions] = useState<WrongQuestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +40,26 @@ export default function WrongQuestionsPage() {
     void loadQuestions();
   }, [loadQuestions]);
 
+  function startWrongReview() {
+    const reviewQuestions: Question[] = questions.map((item) => ({
+      id: item.question_id,
+      bank_type: item.bank_type,
+      target_bank: item.target_bank,
+      job_type: item.job_type,
+      category: item.category,
+      sub_category: item.sub_category,
+      difficulty: item.difficulty,
+      question: item.question,
+      options: item.options,
+      answer: item.correct_answer,
+      explanation: item.explanation,
+      knowledge_point: item.knowledge_point,
+      mistake_tips: item.mistake_tips
+    }));
+    sessionStorage.setItem(WRONG_REVIEW_STORAGE_KEY, JSON.stringify({ mode: "wrong_review", questions: reviewQuestions }));
+    router.push("/quiz");
+  }
+
   return (
     <PageShell>
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -45,11 +68,14 @@ export default function WrongQuestionsPage() {
           <h1 className="page-title mt-3">错题本</h1>
           <p className="page-description">集中复盘错误答案和原因，修正知识盲点与解题习惯。</p>
         </div>
-        <div className="w-full sm:w-56">
+        <div className="flex w-full flex-col gap-3 sm:w-64">
           <Select label="按模块筛选" value={category} onChange={(event) => setCategory(event.target.value)}>
             <option value="">全部模块</option>
             {FALLBACK_CATEGORIES.map((item) => <option key={item.name}>{item.name}</option>)}
           </Select>
+          <Button disabled={loading || questions.length === 0} onClick={startWrongReview}>
+            开始错题复练
+          </Button>
         </div>
       </div>
 
@@ -126,4 +152,3 @@ export default function WrongQuestionsPage() {
     </PageShell>
   );
 }
-

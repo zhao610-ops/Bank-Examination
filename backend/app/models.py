@@ -52,6 +52,7 @@ class UserAnswer(Base):
     question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"), index=True)
     user_answer: Mapped[str] = mapped_column(String(1))
     is_correct: Mapped[bool] = mapped_column(Boolean)
+    time_used: Mapped[int | None] = mapped_column(Integer, nullable=True)
     mistake_reason: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 

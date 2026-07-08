@@ -7,10 +7,9 @@ export default function TrainingPage() {
   return (
     <PageShell>
       <Badge variant="info">训练配置</Badge>
-      <h1 className="page-title mt-3">选择训练配置</h1>
-      <p className="page-description">根据目标银行、岗位和题型生成专属训练题。配置完成后即可进入沉浸式答题。</p>
+      <h1 className="page-title mt-3">生成今日训练方案</h1>
+      <p className="page-description">智能推荐用于解决今天练什么、练多少题；明确目标时也可以切换到自定义训练。</p>
       <TrainingForm />
     </PageShell>
   );
 }
-

@@ -10,6 +10,8 @@ import type {
   Question,
   Stats,
   TodayPlan,
+  TrainingRecommendation,
+  TrainingRecommendRequest,
   WrongQuestion
 } from "@/types";
 
@@ -50,14 +52,19 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
-  submitAnswer: (questionId: number, userAnswer: AnswerOption) =>
+  submitAnswer: (questionId: number, userAnswer: AnswerOption, timeUsed?: number) =>
     request<AnswerResult>("/api/answers/submit", {
       method: "POST",
-      body: JSON.stringify({ question_id: questionId, user_answer: userAnswer })
+      body: JSON.stringify({ question_id: questionId, user_answer: userAnswer, time_used: timeUsed })
     }),
   getWrongQuestions: (category?: string) =>
     request<WrongQuestion[]>(`/api/wrong-questions${category ? `?category=${encodeURIComponent(category)}` : ""}`),
   getStats: () => request<Stats>("/api/stats"),
+  recommendTraining: (payload: TrainingRecommendRequest) =>
+    request<TrainingRecommendation>("/api/training/recommend", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
   createExamPlan: (payload: CreateExamPlanPayload) =>
     request<ExamPlan>("/api/exam-plan/create", {
       method: "POST",

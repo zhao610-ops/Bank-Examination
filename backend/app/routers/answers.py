@@ -25,6 +25,7 @@ def submit_answer(payload: AnswerSubmitRequest, db: Session = Depends(get_db)) -
             question_id=question.id,
             user_answer=payload.user_answer,
             is_correct=is_correct,
+            time_used=payload.time_used,
             mistake_reason=mistake_reason,
         )
     )

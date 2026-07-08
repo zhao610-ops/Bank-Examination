@@ -30,16 +30,21 @@ def get_wrong_questions(
         WrongQuestionResponse(
             id=answer.id,
             question_id=question.id,
+            bank_type=question.bank_type,
+            target_bank=question.target_bank,
+            job_type=question.job_type,
             category=question.category,
             sub_category=question.sub_category,
+            difficulty=question.difficulty,
             question=question.question_text,
             options=json.loads(question.options),
             user_answer=answer.user_answer,
             correct_answer=question.answer,
             explanation=question.explanation,
+            knowledge_point=question.knowledge_point,
+            mistake_tips=question.mistake_tips,
             mistake_reason=answer.mistake_reason,
             created_at=answer.created_at,
         )
         for answer, question in db.execute(statement).all()
     ]
-
