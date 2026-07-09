@@ -1,4 +1,4 @@
-import type { Difficulty } from "@/types";
+import type { Difficulty, SourceType, VerificationStatus, TrainingSourceMode } from "@/types";
 import type { BankGroup, Category } from "@/types";
 
 
@@ -6,6 +6,24 @@ export const EXAM_TYPES = ["秋招", "春招", "实习招聘", "社招"];
 export const JOB_TYPES = ["综合岗", "柜员岗", "客户经理岗", "金融科技岗", "风控岗", "管培生"];
 export const QUESTION_COUNTS = [5, 10, 20];
 export const DAILY_MINUTES_OPTIONS = [15, 30, 60, 90];
+export const TRAINING_SOURCE_MODES: { value: TrainingSourceMode; label: string }[] = [
+  { value: "normal", label: "普通训练" },
+  { value: "real_only", label: "只练真题" },
+  { value: "web_retrieved", label: "AI检索题" }
+];
+export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
+  ai_generated: "AI生成",
+  web_retrieved: "AI检索",
+  verified_real_exam: "已核验真题",
+  mock_exam: "模拟题",
+  imported: "导入题",
+  manual: "手动录入"
+};
+export const VERIFICATION_STATUS_LABELS: Record<VerificationStatus, string> = {
+  unverified: "待核验",
+  verified: "已核验",
+  rejected: "已驳回"
+};
 export const DIFFICULTIES: { value: Difficulty; label: string }[] = [
   { value: "easy", label: "基础" },
   { value: "medium", label: "中等" },

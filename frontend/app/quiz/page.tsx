@@ -47,7 +47,8 @@ function taskToConfig(plan: SmartTrainingPlan, task: TrainingTaskRecommendation)
     category: task.category,
     sub_category: task.sub_category,
     difficulty: task.difficulty,
-    question_count: task.question_count
+    question_count: task.question_count,
+    source_mode: plan.source_mode ?? "normal"
   };
 }
 
@@ -161,6 +162,7 @@ export default function QuizPage() {
     }
     try {
       const parsed = JSON.parse(stored) as TrainingConfig;
+      parsed.source_mode = parsed.source_mode ?? "normal";
       setMode("custom");
       setConfig(parsed);
       void generate(parsed);

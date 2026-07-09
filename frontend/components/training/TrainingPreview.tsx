@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { DIFFICULTIES } from "@/lib/constants";
+import { DIFFICULTIES, TRAINING_SOURCE_MODES } from "@/lib/constants";
 import type { TrainingConfig } from "@/types";
 
 
@@ -12,12 +12,14 @@ interface TrainingPreviewProps {
 
 export function TrainingPreview({ config, onStart }: TrainingPreviewProps) {
   const difficulty = DIFFICULTIES.find((item) => item.value === config.difficulty)?.label ?? "基础";
+  const sourceMode = TRAINING_SOURCE_MODES.find((item) => item.value === config.source_mode)?.label ?? "普通训练";
   const summary = [
     ["考试批次", config.exam_type],
     ["目标银行", config.target_bank],
     ["岗位方向", config.job_type],
     ["训练模块", `${config.category} · ${config.sub_category}`],
-    ["训练难度", difficulty]
+    ["训练难度", difficulty],
+    ["题目来源", sourceMode]
   ];
 
   return (
@@ -46,9 +48,8 @@ export function TrainingPreview({ config, onStart }: TrainingPreviewProps) {
           <span className="font-medium text-slate-800">约 {Math.ceil(config.question_count * 1.5)} 分钟</span>
         </div>
         <Button className="mt-6 w-full" onClick={onStart}>开始训练</Button>
-        <p className="mt-3 text-center text-xs text-slate-400">题目将由 AI 根据当前配置生成</p>
+        <p className="mt-3 text-center text-xs text-slate-400">题目将按当前来源规则加载</p>
       </CardContent>
     </Card>
   );
 }
-

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { OptionButton } from "@/components/quiz/OptionButton";
+import { QuestionSourceBadges } from "@/components/quiz/QuestionSourceBadges";
 import type { AnswerOption, AnswerResult, Question } from "@/types";
 
 
@@ -24,6 +25,7 @@ export function QuestionCard({ question, selected, result, submitting, onSelect,
         <Badge variant="info">{question.category}｜{question.sub_category}</Badge>
         <Badge variant={question.difficulty === "hard" ? "warning" : "default"}>{difficultyLabels[question.difficulty]}</Badge>
         <Badge>{question.knowledge_point}</Badge>
+        <QuestionSourceBadges question={question} />
       </CardHeader>
       <CardContent>
         <h1 className="text-base font-medium leading-8 text-slate-950 sm:text-lg">{question.question}</h1>
@@ -51,4 +53,3 @@ export function QuestionCard({ question, selected, result, submitting, onSelect,
     </Card>
   );
 }
-

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/training", label: "训练" },
+  { href: "/web-question-search", label: "AI 真题检索" },
   { href: "/plan", label: "备考计划" },
   { href: "/wrong", label: "错题本" },
   { href: "/stats", label: "能力分析" }

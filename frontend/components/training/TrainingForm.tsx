@@ -18,6 +18,7 @@ import {
   JOB_TYPES,
   QUESTION_COUNTS,
   SMART_TRAINING_STORAGE_KEY,
+  TRAINING_SOURCE_MODES,
   TRAINING_STORAGE_KEY
 } from "@/lib/constants";
 import type {
@@ -45,7 +46,8 @@ const initialConfig: TrainingConfig = {
   category: FALLBACK_CATEGORIES[0].name,
   sub_category: FALLBACK_CATEGORIES[0].children[0],
   difficulty: "easy",
-  question_count: QUESTION_COUNTS[0]
+  question_count: QUESTION_COUNTS[0],
+  source_mode: "normal"
 };
 
 const initialSmartForm: TrainingRecommendRequest = {
@@ -65,6 +67,7 @@ export function TrainingForm() {
   const [config, setConfig] = useState<TrainingConfig>(initialConfig);
   const [smartForm, setSmartForm] = useState<TrainingRecommendRequest>(initialSmartForm);
   const [recommendation, setRecommendation] = useState<TrainingRecommendation | null>(null);
+  const [smartSourceMode, setSmartSourceMode] = useState(initialConfig.source_mode);
   const [usingFallback, setUsingFallback] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
@@ -135,6 +138,7 @@ export function TrainingForm() {
       bank_type: smartForm.bank_type,
       target_bank: smartForm.target_bank,
       job_type: smartForm.job_type,
+      source_mode: smartSourceMode,
       tasks: recommendation.tasks
     };
     sessionStorage.setItem(SMART_TRAINING_STORAGE_KEY, JSON.stringify(plan));
@@ -195,6 +199,9 @@ export function TrainingForm() {
               </label>
               <Select label="每日可用时间" value={smartForm.daily_minutes} onChange={(event) => updateSmartForm("daily_minutes", Number(event.target.value))}>
                 {DAILY_MINUTES_OPTIONS.map((item) => <option key={item} value={item}>{item} 分钟</option>)}
+              </Select>
+              <Select label="题目来源" value={smartSourceMode} onChange={(event) => setSmartSourceMode(event.target.value as typeof smartSourceMode)} hint="只练真题不足时会提示，不会用生成题冒充。">
+                {TRAINING_SOURCE_MODES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
               </Select>
               <div className="sm:col-span-2">
                 <Button loading={generating} onClick={() => void generateRecommendation()}>生成今日训练方案</Button>
@@ -293,6 +300,9 @@ export function TrainingForm() {
               </Select>
               <Select label="题量" name="question_count" value={config.question_count} onChange={(event) => updateConfig("question_count", Number(event.target.value))} hint="每道题提交后生成下一题">
                 {QUESTION_COUNTS.map((item) => <option key={item} value={item}>{item} 题</option>)}
+              </Select>
+              <Select label="题目来源" name="source_mode" value={config.source_mode} onChange={(event) => updateConfig("source_mode", event.target.value as typeof config.source_mode)} hint="AI检索题会显示待核验标签。">
+                {TRAINING_SOURCE_MODES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
               </Select>
             </CardContent>
           </Card>

@@ -123,7 +123,7 @@ class LLMService:
                     raise ValueError("模型返回题目字段校验失败")
                 return LLMQuestionResult(
                     question=GeneratedQuestion.model_validate(data),
-                    source_type="llm",
+                    source_type="ai_generated",
                     llm_provider=provider,
                     llm_model=model,
                 )
@@ -216,7 +216,7 @@ class LLMService:
     def _mock_result(self, request: QuestionGenerateRequest, provider: str, model: str) -> LLMQuestionResult:
         return LLMQuestionResult(
             question=self._build_mock_question(request),
-            source_type="mock",
+            source_type="ai_generated",
             llm_provider=provider,
             llm_model=model,
         )

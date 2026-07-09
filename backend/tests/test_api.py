@@ -1,5 +1,5 @@
 import os
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -15,7 +15,7 @@ from sqlalchemy import delete  # noqa: E402
 from app.config import get_settings  # noqa: E402
 from app.database import SessionLocal  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import UserAnswer, UserStat  # noqa: E402
+from app.models import Question, UserAnswer, UserStat  # noqa: E402
 from app.services.llm_service import LLMService  # noqa: E402
 
 
@@ -46,7 +46,7 @@ def test_complete_answer_flow() -> None:
         assert generated.status_code == 201
         question = generated.json()
         assert set(question["options"]) == {"A", "B", "C", "D"}
-        assert question["source_type"] == "mock"
+        assert question["source_type"] == "ai_generated"
 
         submitted = client.post(
             "/api/answers/submit",
@@ -86,6 +86,134 @@ def test_answer_submit_without_time_used_is_compatible() -> None:
         assert submitted.status_code == 200
 
 
+def web_question_payload(unique: str, source_url: str = "https://example.com/source", sub_category: str = "资料分析") -> dict:
+    return {
+        "bank_type": "城商行",
+        "target_bank": "广州银行",
+        "job_type": "金融科技岗",
+        "category": "EPI / 行测",
+        "sub_category": sub_category,
+        "difficulty": "medium",
+        "question_text": f"AI检索候选题 {unique}：某指标本期为120，上期为100，增长率是多少？",
+        "options": {"A": "10%", "B": "20%", "C": "30%", "D": "40%"},
+        "correct_answer": "B",
+        "explanation": "增长率=（120-100）÷100=20%。",
+        "knowledge_point": "增长率计算",
+        "source_bank": "广州银行",
+        "exam_year": 2024,
+        "source_url": source_url,
+        "source_title": "公开网页回忆版",
+        "confidence_score": 0.75,
+    }
+
+
+def test_generated_question_defaults_to_ai_generated() -> None:
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/questions/generate",
+            json={
+                "bank_type": "城商行",
+                "target_bank": "广州银行",
+                "job_type": "金融科技岗",
+                "category": "EPI / 行测",
+                "sub_category": "资料分析",
+                "difficulty": "easy",
+            },
+        )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["source_type"] == "ai_generated"
+    assert body["verification_status"] == "unverified"
+
+
+def test_web_retrieved_question_defaults_to_unverified_and_requires_source_url() -> None:
+    unique = datetime.now().isoformat()
+    with TestClient(app) as client:
+        missing_source = web_question_payload(unique, source_url="")
+        failed = client.post("/api/web-questions/import", json=missing_source)
+        assert failed.status_code in {400, 422}
+
+        imported = client.post("/api/web-questions/import", json=web_question_payload(unique))
+
+    assert imported.status_code == 201
+    body = imported.json()
+    assert body["source_type"] == "web_retrieved"
+    assert body["verification_status"] == "unverified"
+    assert body["source_url"] == "https://example.com/source"
+
+
+def test_manual_verify_changes_web_retrieved_to_verified_real_exam() -> None:
+    unique = datetime.now().isoformat()
+    with TestClient(app) as client:
+        imported = client.post("/api/web-questions/import", json=web_question_payload(unique))
+        assert imported.status_code == 201
+        verified = client.post(f"/api/questions/{imported.json()['id']}/verify")
+
+    assert verified.status_code == 200
+    body = verified.json()
+    assert body["source_type"] == "verified_real_exam"
+    assert body["verification_status"] == "verified"
+
+
+def test_ai_generated_question_cannot_be_verified_real_exam() -> None:
+    with TestClient(app) as client:
+        generated = client.post(
+            "/api/questions/generate",
+            json={
+                "bank_type": "城商行",
+                "target_bank": "广州银行",
+                "job_type": "金融科技岗",
+                "category": "EPI / 行测",
+                "sub_category": "资料分析",
+                "difficulty": "easy",
+            },
+        )
+        response = client.post(f"/api/questions/{generated.json()['id']}/verify")
+
+    assert response.status_code == 400
+    assert "AI 生成题不能标记为已核验真题" in response.json()["detail"]
+
+
+def test_unverified_question_does_not_enter_real_only_training() -> None:
+    unique = datetime.now().isoformat()
+    sub_category = f"资料分析{datetime.now().microsecond}"
+    with TestClient(app) as client:
+        imported = client.post("/api/web-questions/import", json=web_question_payload(unique, sub_category=sub_category))
+        assert imported.status_code == 201
+        real_only = client.post(
+            "/api/questions/generate",
+            json={
+                "bank_type": "城商行",
+                "target_bank": "广州银行",
+                "job_type": "金融科技岗",
+                "category": "EPI / 行测",
+                "sub_category": sub_category,
+                "difficulty": "medium",
+                "source_mode": "real_only",
+            },
+        )
+        assert real_only.status_code == 409
+        assert real_only.json()["detail"] == "当前已核验真题数量不足，是否改用 AI 生成模拟题？"
+
+        client.post(f"/api/questions/{imported.json()['id']}/verify")
+        verified_real = client.post(
+            "/api/questions/generate",
+            json={
+                "bank_type": "城商行",
+                "target_bank": "广州银行",
+                "job_type": "金融科技岗",
+                "category": "EPI / 行测",
+                "sub_category": sub_category,
+                "difficulty": "medium",
+                "source_mode": "real_only",
+            },
+        )
+
+    assert verified_real.status_code == 200
+    assert verified_real.json()["source_type"] == "verified_real_exam"
+
+
 def test_llm_status_does_not_leak_api_key(monkeypatch) -> None:
     monkeypatch.setenv("LLM_PROVIDER", "deepseek")
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
@@ -122,7 +250,7 @@ def test_llm_provider_mock_returns_mock(monkeypatch) -> None:
 
     assert response.status_code == 201
     body = response.json()
-    assert body["source_type"] == "mock"
+    assert body["source_type"] == "ai_generated"
     assert body["llm_provider"] == "mock"
 
 
@@ -151,7 +279,7 @@ def test_llm_invalid_json_falls_back_to_mock(monkeypatch) -> None:
 
     assert response.status_code == 201
     body = response.json()
-    assert body["source_type"] == "mock"
+    assert body["source_type"] == "ai_generated"
     assert body["llm_provider"] == "deepseek"
 
 

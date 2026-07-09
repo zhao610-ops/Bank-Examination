@@ -6,6 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 AnswerOption = Literal["A", "B", "C", "D"]
 Difficulty = Literal["easy", "medium", "hard"]
+SourceType = Literal["ai_generated", "web_retrieved", "verified_real_exam", "mock_exam", "imported", "manual"]
+VerificationStatus = Literal["unverified", "verified", "rejected"]
+TrainingSourceMode = Literal["normal", "real_only", "web_retrieved"]
 
 
 class QuestionGenerateRequest(BaseModel):
@@ -15,6 +18,7 @@ class QuestionGenerateRequest(BaseModel):
     category: str = Field(min_length=1, max_length=50)
     sub_category: str = Field(min_length=1, max_length=50)
     difficulty: Difficulty
+    source_mode: TrainingSourceMode = "normal"
 
 
 class GeneratedQuestion(BaseModel):
@@ -43,7 +47,14 @@ class GeneratedQuestion(BaseModel):
 
 class QuestionResponse(GeneratedQuestion):
     id: int
-    source_type: str = "llm"
+    source_type: SourceType = "ai_generated"
+    source_bank: str | None = None
+    exam_year: int | None = None
+    source_url: str | None = None
+    source_title: str | None = None
+    retrieved_at: datetime | None = None
+    verification_status: VerificationStatus = "unverified"
+    confidence_score: float | None = None
     llm_provider: str = "mock"
     llm_model: str = "mock"
 
@@ -201,3 +212,66 @@ class TrainingRecommendResponse(BaseModel):
     estimated_minutes: int
     tasks: list[TrainingTaskRecommendation]
     suggestions: list[str]
+
+
+class WebQuestionSearchRequest(BaseModel):
+    bank_name: str = Field(min_length=1, max_length=100)
+    exam_year: int | None = Field(default=None, ge=2000, le=2100)
+    category: str = Field(min_length=1, max_length=50)
+    position_type: str | None = Field(default=None, max_length=50)
+    max_results: int = Field(default=5, ge=1, le=20)
+
+
+class WebQuestionCandidate(BaseModel):
+    question_text: str
+    options: dict[str, str]
+    correct_answer: AnswerOption | None = None
+    explanation: str = ""
+    category: str
+    difficulty: Difficulty = "medium"
+    knowledge_point: str = ""
+    bank_name: str
+    exam_year: int | None = None
+    source_url: str
+    source_title: str
+    confidence_score: float | None = Field(default=None, ge=0, le=1)
+    is_complete: bool = False
+    is_imported: bool = False
+    import_error: str | None = None
+
+    @field_validator("options")
+    @classmethod
+    def validate_candidate_options(cls, value: dict[str, str]) -> dict[str, str]:
+        return {key: str(value.get(key, "")).strip() for key in ("A", "B", "C", "D")}
+
+
+class WebQuestionSearchResponse(BaseModel):
+    keywords: list[str]
+    candidates: list[WebQuestionCandidate]
+
+
+class WebQuestionImportRequest(BaseModel):
+    bank_type: str = Field(default="未知", max_length=50)
+    target_bank: str = Field(min_length=1, max_length=100)
+    job_type: str = Field(default="未知", max_length=50)
+    category: str = Field(min_length=1, max_length=50)
+    sub_category: str = Field(default="AI检索", max_length=50)
+    difficulty: Difficulty = "medium"
+    question_text: str = Field(min_length=1)
+    options: dict[str, str]
+    correct_answer: AnswerOption
+    explanation: str = ""
+    knowledge_point: str = ""
+    source_bank: str | None = None
+    exam_year: int | None = Field(default=None, ge=2000, le=2100)
+    source_url: str = Field(min_length=1)
+    source_title: str = Field(min_length=1)
+    confidence_score: float | None = Field(default=None, ge=0, le=1)
+
+    @field_validator("options")
+    @classmethod
+    def validate_import_options(cls, value: dict[str, str]) -> dict[str, str]:
+        normalized = {key: str(value.get(key, "")).strip() for key in ("A", "B", "C", "D")}
+        if set(normalized) != {"A", "B", "C", "D"} or any(not text for text in normalized.values()):
+            raise ValueError("选项必须包含非空的 A、B、C、D")
+        return normalized

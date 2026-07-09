@@ -7,7 +7,7 @@ from sqlalchemy import inspect, text
 
 from app.config import get_settings
 from app.database import Base, SessionLocal, engine
-from app.routers import answers, exam_plan, llm, metadata, questions, stats, training, wrong_questions
+from app.routers import answers, exam_plan, llm, metadata, questions, stats, training, web_questions, wrong_questions
 from app.seed_data import seed_database
 
 
@@ -15,12 +15,30 @@ def ensure_dev_schema_columns() -> None:
     """开发环境轻量补列，避免旧 SQLite 库缺少新增字段。"""
 
     inspector = inspect(engine)
-    if "user_answers" not in inspector.get_table_names():
+    table_names = inspector.get_table_names()
+    if "user_answers" not in table_names:
         return
     columns = {column["name"] for column in inspector.get_columns("user_answers")}
     if "time_used" not in columns:
         with engine.begin() as connection:
             connection.execute(text("ALTER TABLE user_answers ADD COLUMN time_used INTEGER"))
+
+    if "questions" not in table_names:
+        return
+    question_columns = {column["name"] for column in inspector.get_columns("questions")}
+    column_sql = {
+        "source_bank": "ALTER TABLE questions ADD COLUMN source_bank VARCHAR(100)",
+        "exam_year": "ALTER TABLE questions ADD COLUMN exam_year INTEGER",
+        "source_url": "ALTER TABLE questions ADD COLUMN source_url TEXT",
+        "source_title": "ALTER TABLE questions ADD COLUMN source_title VARCHAR(300)",
+        "retrieved_at": "ALTER TABLE questions ADD COLUMN retrieved_at DATETIME",
+        "verification_status": "ALTER TABLE questions ADD COLUMN verification_status VARCHAR(20) DEFAULT 'unverified'",
+        "confidence_score": "ALTER TABLE questions ADD COLUMN confidence_score FLOAT",
+    }
+    with engine.begin() as connection:
+        for name, sql in column_sql.items():
+            if name not in question_columns:
+                connection.execute(text(sql))
 
 
 @asynccontextmanager
@@ -50,6 +68,7 @@ app.include_router(wrong_questions.router)
 app.include_router(stats.router)
 app.include_router(exam_plan.router)
 app.include_router(training.router)
+app.include_router(web_questions.router)
 
 
 @app.get("/health")

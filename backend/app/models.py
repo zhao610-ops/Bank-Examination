@@ -41,7 +41,14 @@ class Question(Base):
     explanation: Mapped[str] = mapped_column(Text)
     knowledge_point: Mapped[str] = mapped_column(String(200))
     mistake_tips: Mapped[str] = mapped_column(Text)
-    source_type: Mapped[str] = mapped_column(String(20), default="llm")
+    source_type: Mapped[str] = mapped_column(String(30), default="ai_generated")
+    source_bank: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    exam_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_title: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    retrieved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    verification_status: Mapped[str] = mapped_column(String(20), default="unverified")
+    confidence_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 

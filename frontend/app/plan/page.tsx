@@ -113,7 +113,8 @@ export default function PlanPage() {
       category: task.category,
       sub_category: task.sub_category,
       difficulty: "easy",
-      question_count: Math.max(task.target_count - task.completed_count, 1)
+      question_count: Math.max(task.target_count - task.completed_count, 1),
+      source_mode: "normal"
     };
     sessionStorage.setItem(TRAINING_STORAGE_KEY, JSON.stringify(config));
     router.push("/quiz");

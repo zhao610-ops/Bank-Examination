@@ -12,6 +12,9 @@ import type {
   TodayPlan,
   TrainingRecommendation,
   TrainingRecommendRequest,
+  WebQuestionImportPayload,
+  WebQuestionSearchRequest,
+  WebQuestionSearchResponse,
   WrongQuestion
 } from "@/types";
 
@@ -79,5 +82,24 @@ export const api = {
     }
   },
   getTodayPlan: () => request<TodayPlan>("/api/exam-plan/today"),
-  getPlanProgress: () => request<PlanProgress>("/api/exam-plan/progress")
+  getPlanProgress: () => request<PlanProgress>("/api/exam-plan/progress"),
+  searchWebQuestions: (payload: WebQuestionSearchRequest) =>
+    request<WebQuestionSearchResponse>("/api/web-questions/search", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  importWebQuestion: (payload: WebQuestionImportPayload) =>
+    request<Question>("/api/web-questions/import", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  getImportedWebQuestions: () => request<Question[]>("/api/web-questions/imported"),
+  verifyQuestion: (questionId: number) =>
+    request<Question>(`/api/questions/${questionId}/verify`, {
+      method: "POST"
+    }),
+  rejectQuestion: (questionId: number) =>
+    request<Question>(`/api/questions/${questionId}/reject`, {
+      method: "POST"
+    })
 };

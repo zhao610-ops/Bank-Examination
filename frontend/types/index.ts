@@ -1,5 +1,8 @@
 export type AnswerOption = "A" | "B" | "C" | "D";
 export type Difficulty = "easy" | "medium" | "hard";
+export type SourceType = "ai_generated" | "web_retrieved" | "verified_real_exam" | "mock_exam" | "imported" | "manual";
+export type VerificationStatus = "unverified" | "verified" | "rejected";
+export type TrainingSourceMode = "normal" | "real_only" | "web_retrieved";
 
 export interface TrainingConfig {
   exam_type: string;
@@ -10,6 +13,7 @@ export interface TrainingConfig {
   sub_category: string;
   difficulty: Difficulty;
   question_count: number;
+  source_mode: TrainingSourceMode;
 }
 
 export type GenerateQuestionPayload = Omit<TrainingConfig, "exam_type" | "question_count">;
@@ -46,18 +50,27 @@ export interface SmartTrainingPlan {
   bank_type: string;
   target_bank: string;
   job_type: string;
+  source_mode: TrainingSourceMode;
   tasks: TrainingTaskRecommendation[];
 }
 
-export interface Question extends GenerateQuestionPayload {
+export interface Question extends Omit<GenerateQuestionPayload, "source_mode"> {
   id: number;
+  source_mode?: TrainingSourceMode;
   question: string;
   options: Record<AnswerOption, string>;
   answer: AnswerOption;
   explanation: string;
   knowledge_point: string;
   mistake_tips: string;
-  source_type?: string;
+  source_type?: SourceType;
+  source_bank?: string | null;
+  exam_year?: number | null;
+  source_url?: string | null;
+  source_title?: string | null;
+  retrieved_at?: string | null;
+  verification_status?: VerificationStatus;
+  confidence_score?: number | null;
   llm_provider?: string;
   llm_model?: string;
 }
@@ -172,4 +185,54 @@ export interface CreateExamPlanPayload {
   target_bank: string;
   job_type: string;
   exam_date: string;
+}
+
+export interface WebQuestionSearchRequest {
+  bank_name: string;
+  exam_year?: number | null;
+  category: string;
+  position_type?: string | null;
+  max_results: number;
+}
+
+export interface WebQuestionCandidate {
+  question_text: string;
+  options: Record<AnswerOption, string>;
+  correct_answer: AnswerOption | null;
+  explanation: string;
+  category: string;
+  difficulty: Difficulty;
+  knowledge_point: string;
+  bank_name: string;
+  exam_year?: number | null;
+  source_url: string;
+  source_title: string;
+  confidence_score?: number | null;
+  is_complete: boolean;
+  is_imported: boolean;
+  import_error?: string | null;
+}
+
+export interface WebQuestionSearchResponse {
+  keywords: string[];
+  candidates: WebQuestionCandidate[];
+}
+
+export interface WebQuestionImportPayload {
+  bank_type: string;
+  target_bank: string;
+  job_type: string;
+  category: string;
+  sub_category: string;
+  difficulty: Difficulty;
+  question_text: string;
+  options: Record<AnswerOption, string>;
+  correct_answer: AnswerOption;
+  explanation: string;
+  knowledge_point: string;
+  source_bank?: string | null;
+  exam_year?: number | null;
+  source_url: string;
+  source_title: string;
+  confidence_score?: number | null;
 }
