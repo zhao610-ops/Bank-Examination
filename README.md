@@ -44,7 +44,7 @@ Copy-Item .env.example .env
 
 ```env
 LLM_PROVIDER=deepseek
-LLM_MODEL=deepseek-chat
+LLM_MODEL=deepseek-pro
 DEEPSEEK_API_KEY=sk-xxx
 ALLOW_LLM=true
 USE_MOCK_WHEN_NO_KEY=true

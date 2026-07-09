@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:3000"
     frontend_origins: str = "http://localhost:3000"
     llm_provider: Literal["deepseek", "openai", "mock"] = "deepseek"
-    llm_model: str = "deepseek-chat"
+    llm_model: str = "deepseek-pro"
     deepseek_api_key: str | None = None
     deepseek_base_url: str = "https://api.deepseek.com"
-    deepseek_model: str = "deepseek-chat"
+    deepseek_model: str = "deepseek-pro"
     openai_api_key: str | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"

@@ -6,6 +6,7 @@ import type {
   CreateExamPlanPayload,
   ExamPlan,
   GenerateQuestionPayload,
+  LLMStatus,
   PlanProgress,
   Question,
   Stats,
@@ -48,6 +49,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  getLLMStatus: () => request<LLMStatus>("/api/llm/status"),
   getBanks: () => request<BankGroup[]>("/api/banks"),
   getCategories: () => request<Category[]>("/api/categories"),
   generateQuestion: (payload: GenerateQuestionPayload) =>

@@ -25,6 +25,7 @@ import type {
   BankGroup,
   Category,
   Difficulty,
+  LLMStatus,
   SmartTrainingPlan,
   TrainingConfig,
   TrainingRecommendation,
@@ -68,6 +69,7 @@ export function TrainingForm() {
   const [smartForm, setSmartForm] = useState<TrainingRecommendRequest>(initialSmartForm);
   const [recommendation, setRecommendation] = useState<TrainingRecommendation | null>(null);
   const [smartSourceMode, setSmartSourceMode] = useState(initialConfig.source_mode);
+  const [llmStatus, setLlmStatus] = useState<LLMStatus | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
@@ -79,6 +81,9 @@ export function TrainingForm() {
         if (categoryData.length) setCategories(categoryData);
       })
       .catch(() => setUsingFallback(true));
+    api.getLLMStatus()
+      .then(setLlmStatus)
+      .catch(() => setLlmStatus(null));
   }, []);
 
   const currentSmartBanks = useMemo(
@@ -171,6 +176,12 @@ export function TrainingForm() {
       </div>
 
       {usingFallback && <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">后端暂未连接，当前展示本地基础选项；启动后端后可正常生成题目。</p>}
+      {llmStatus && (
+        <div className={`mt-4 rounded-lg px-3 py-2 text-xs ${llmStatus.status === "ready" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+          当前模型：{llmStatus.provider} / {llmStatus.model}；
+          {llmStatus.status === "ready" ? "已配置 Key，将使用真实模型出题。" : "当前会使用本地模拟题兜底。"}
+        </div>
+      )}
       {error && <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
       {mode === "smart" ? (

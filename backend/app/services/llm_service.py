@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -222,15 +223,73 @@ class LLMService:
         )
 
     @staticmethod
-    def _call_mock_dict() -> dict[str, Any]:
-        return {
-            "question": "某银行一年期存款年利率为 2%，客户存入 10,000 元，按单利计算，到期利息是多少？",
-            "options": {"A": "100 元", "B": "200 元", "C": "500 元", "D": "1,000 元"},
-            "answer": "B",
-            "explanation": "单利利息=本金×年利率×期限，即 10,000×2%×1=200 元。",
-            "knowledge_point": "单利计算",
-            "mistake_tips": "注意区分本金、本息和利息，题目只要求计算利息。",
+    def _call_mock_dict(request: QuestionGenerateRequest | None = None) -> dict[str, Any]:
+        category = request.category if request else ""
+        sub_category = request.sub_category if request else ""
+        bank = request.target_bank if request else "某银行"
+
+        common_questions = [
+            {
+                "question": f"{bank}一年期存款年利率为 2%，客户存入 10,000 元，按单利计算，到期利息是多少？",
+                "options": {"A": "100 元", "B": "200 元", "C": "500 元", "D": "1,000 元"},
+                "answer": "B",
+                "explanation": "单利利息=本金×年利率×期限，即 10,000×2%×1=200 元。",
+                "knowledge_point": "单利计算",
+                "mistake_tips": "注意区分本金、本息和利息，题目只要求计算利息。",
+            },
+            {
+                "question": f"{bank}某网点本月办理业务 1200 笔，上月为 1000 笔，本月环比增长率是多少？",
+                "options": {"A": "10%", "B": "15%", "C": "20%", "D": "25%"},
+                "answer": "C",
+                "explanation": "环比增长率=（本期量-上期量）÷上期量=（1200-1000）÷1000=20%。",
+                "knowledge_point": "增长率计算",
+                "mistake_tips": "增长率分母应使用基期量，不要直接用差值除以本期量。",
+            },
+            {
+                "question": "商业银行开展授信业务时，最核心的风险管理目标是什么？",
+                "options": {"A": "扩大网点数量", "B": "控制信用风险", "C": "提高柜面速度", "D": "增加宣传费用"},
+                "answer": "B",
+                "explanation": "授信业务直接面对借款人违约可能，核心目标是识别、计量和控制信用风险。",
+                "knowledge_point": "信用风险管理",
+                "mistake_tips": "银行业务题要先判断业务场景，授信通常对应信用风险。",
+            },
+        ]
+        specialized_questions = {
+            "英语": {
+                "question": "Choose the best word: The bank will ______ the customer's identity before opening the account.",
+                "options": {"A": "verify", "B": "reduce", "C": "borrow", "D": "delay"},
+                "answer": "A",
+                "explanation": "verify 表示核验、确认，符合开户注册前核验客户身份的语境。",
+                "knowledge_point": "商务英语词汇",
+                "mistake_tips": "注意结合银行业务语境选择动词。",
+            },
+            "金融科技": {
+                "question": "在关系型数据库中，用于从表中查询数据的 SQL 关键字是哪个？",
+                "options": {"A": "SELECT", "B": "INSERT", "C": "UPDATE", "D": "DELETE"},
+                "answer": "A",
+                "explanation": "SELECT 用于查询数据；INSERT、UPDATE、DELETE 分别用于新增、修改和删除数据。",
+                "knowledge_point": "SQL 基础",
+                "mistake_tips": "区分 DML 中查询、新增、修改、删除四类操作。",
+            },
+            "综合知识": {
+                "question": "中央银行下调存款准备金率，通常会产生什么直接影响？",
+                "options": {"A": "减少商业银行可贷资金", "B": "增加商业银行可贷资金", "C": "冻结居民存款", "D": "取消贷款利率"},
+                "answer": "B",
+                "explanation": "下调存款准备金率会释放商业银行原本需缴存的资金，增加可贷资金供给。",
+                "knowledge_point": "货币政策工具",
+                "mistake_tips": "准备金率下降通常对应流动性释放。",
+            },
+            "EPI": {
+                "question": "某产品原价 100 元，连续两次涨价 10%，现价是多少？",
+                "options": {"A": "110 元", "B": "120 元", "C": "121 元", "D": "122 元"},
+                "answer": "C",
+                "explanation": "第一次涨价后为 110 元，第二次在 110 元基础上再涨 10%，现价为 121 元。",
+                "knowledge_point": "百分比变化",
+                "mistake_tips": "连续百分比变化要逐步计算，第二次变化的基数已发生变化。",
+            },
         }
+        matched = [item for key, item in specialized_questions.items() if key in category or key in sub_category]
+        return random.choice(matched or common_questions)
 
     @classmethod
     def _build_mock_question(cls, request: QuestionGenerateRequest) -> GeneratedQuestion:
@@ -238,5 +297,5 @@ class LLMService:
 
         return GeneratedQuestion(
             **request.model_dump(),
-            **cls._call_mock_dict(),
+            **cls._call_mock_dict(request),
         )

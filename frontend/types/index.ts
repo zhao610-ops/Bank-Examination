@@ -45,6 +45,15 @@ export interface TrainingRecommendation {
   suggestions: string[];
 }
 
+export interface LLMStatus {
+  provider: string;
+  model: string;
+  allow_llm: boolean;
+  has_api_key: boolean;
+  use_mock_when_no_key: boolean;
+  status: "ready" | "mock_fallback" | "disabled";
+}
+
 export interface SmartTrainingPlan {
   exam_type: string;
   bank_type: string;

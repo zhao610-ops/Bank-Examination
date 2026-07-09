@@ -216,7 +216,7 @@ def test_unverified_question_does_not_enter_real_only_training() -> None:
 
 def test_llm_status_does_not_leak_api_key(monkeypatch) -> None:
     monkeypatch.setenv("LLM_PROVIDER", "deepseek")
-    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "")
     get_settings.cache_clear()
 
     with TestClient(app) as client:
